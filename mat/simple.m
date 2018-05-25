@@ -1,15 +1,16 @@
 % simple rule
 clear all;
 
-bet = 0.99;
+bet = 0.9950;
 kap = 0.024;
 phi = 2.0;
-rstar = -log(bet)*100;
+pibar = 1.005;
+rstar = log(pibar/bet)*100;
 
 pH = 0.01;
 pL = 0.75;
 sH = rstar;
-sL = rstar-5.0;
+sL = rstar-2.5;
 
 % (semi-)analytical
 A = [-1+(1-pH) pH -(phi-1)*(1-pH) -(phi-1)*pH;
@@ -74,4 +75,6 @@ while(diff>crit)
     
 end
 
-ivec0    
+ivec0
+
+save pfmat_ph0.01sL2.5.mat yvec0 pvec0 ivec0;
