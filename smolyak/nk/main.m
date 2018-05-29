@@ -224,7 +224,7 @@ while ((diff>tol) && (iter<1000))
             % solve nonlinear equations for c and pi
             x0 = [cvec0(i) pivec0(i)]';
             if (peaflag==1)
-                [c0 pi0] = pf0pea(x0,rnpast,gnow,znow,rnow,ystar,coeffc,coeffp,slopecon,np,cflag,xmat,wmat,tol,...
+                [c0 pi0] = pf0f(x0,rnpast,gnow,znow,rnow,ystar,coeffc,coeffp,slopecon,np,cflag,xmat,wmat,tol,...
                     pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,rnss);
             else
                 [c0 pi0] = pf0(x0,rnpast,gnow,znow,rnow,ystar,coefc,coefpi,slopecon,np,cflag,xmat,wmat,tol,...
@@ -283,12 +283,12 @@ while ((diff>tol) && (iter<1000))
         % current PEA
         elseif (pfmethod==2)
             
+            % precomputation of integrals
+            xpevec = reshape(xpemat(:,i,:),[np ne]);
+
             % successive approximation for rn and y
             rn0 = rnvec0(i);
             y0 = yvec0(i);
-            % precomputation of integrals
-            xpevec = reshape(xpemat(:,i,:),[np ne]);
-            
             [c0 pi0] = pf2(rn0,y0,xpevec,coeffc,coeffp,slopecon,np,cflag,pibar,invnu,tau,phi);
             y0 = c0/(1/gbar/exp(gnow) - phi/2*(pi0-pibar)^2);
             rn0 = rnpast^rhor*( rnss*(pi0/pibar)^psi1*(y0/ystar)^psi2 )^(1-rhor)*exp(rnow);
@@ -377,14 +377,6 @@ for time = 1:simTT-1
             c0  = poly4s([xrn xg xz xr]',cflag)*coefc;
             pi0 = poly4s([xrn xg xz xr]',cflag)*coefpi;
         end
-%         x0 = [c0 pi0]';
-%         if (peaflag==1)
-%             [c0 pi0] = pf0f(x0,rnpast,gnow,znow,rnow,ystar,coeffc,coeffp,slopecon,np,cflag,xmat,wmat,tol,...
-%                 pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,rnss);
-%         else
-%             [c0 pi0] = pf0(x0,rnpast,gnow,znow,rnow,ystar,coefc,coefpi,slopecon,np,cflag,xmat,wmat,tol,...
-%                 pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,rnss);
-%         end
         
     elseif (pfmethod==1)
 
@@ -443,14 +435,6 @@ for time = 1:simTT-1
                 cp  = poly4s([xrnp xgp xzp xrp]',cflag)*coefc;
                 pip = poly4s([xrnp xgp xzp xrp]',cflag)*coefpi;
             end
-%             x0 = [c0 pi0]';
-%             if (peaflag==1)
-%                 [cp pip] = pf0f(x0,rn0,gp,zp,rp,ystar,coeffc,coeffp,slopecon,np,cflag,xmat,wmat,tol,...
-%                     pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,rnss);            
-%             else    
-%                 [cp pip] = pf0(x0,rn0,gp,zp,rp,ystar,coefc,coefpi,slopecon,np,cflag,xmat,wmat,tol,...
-%                 pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,rnss);
-%             end
             
         elseif (pfmethod==1)
 
@@ -531,7 +515,7 @@ pi0 = x0(2);
 end
 
 
-function [c0 pi0] = pf0pea(x0,rnpast,gnow,znow,rnow,ystar,coeffc,coeffp,slopecon,np,cflag,xmat,wmat,tol,...
+function [c0 pi0] = pf0f(x0,rnpast,gnow,znow,rnow,ystar,coeffc,coeffp,slopecon,np,cflag,xmat,wmat,tol,...
     pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,rnss)
 
 [x0 rc] = csolve('focnk2f',x0,[],tol^2,100,rnpast,gnow,znow,rnow,ystar,coeffc,coeffp,slopecon,np,cflag,xmat,wmat,...
