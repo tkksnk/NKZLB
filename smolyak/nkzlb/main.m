@@ -55,13 +55,13 @@ mz = 2.0;
 % disp(' order of polynomial, np=2 (Smolyak)');
 % nkpf2(0,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % nkpf2(1,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
-nkpf2(2,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
+% nkpf2(2,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % 
 % disp(' ');
 % disp(' order of polynomial, np=4 (Smolyak)');
 % nkpf2(0,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % nkpf2(1,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
-% nkpf2(2,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
+nkpf2(2,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 
 
 function nkpf2(pfmethod,np,cflag,ngh,tol,damp,simT,...
@@ -236,6 +236,7 @@ while ((diff>tol) && (iter<1000))
         rnow = rgrid(i);
         ystar = (1-1/invnu)^(1/tau)*gbar*exp(gnow);
         
+        % time iteration
         if (pfmethod==0)
         
             % solve nonlinear equations for c and pi

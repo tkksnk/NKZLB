@@ -1,4 +1,4 @@
-function f = focnk2PVf(x0,rnpast,gnow,znow,rnow,ystar,coeffc,coeffp,polyd,xmat,wmat,...
+function f = focnk2zlbPVf(x0,rnpast,gnow,znow,rnow,ystar,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,ZLBflag,polyd,xmat,wmat,...
     pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,rnss)
 
 nghe = size(xmat,1);
@@ -17,15 +17,25 @@ for ighe=1:nghe
     zp = rhoz*znow + xmat(ighe,2);
     rp = xmat(ighe,3);
     
-    fcx = makebas4([rn0 gp zp rp],polyd)*coeffc;
-    fpx = makebas4([rn0 gp zp rp],polyd)*coeffp;
-
+    rnp = makebas4([rn0 gp zp rp],polyd)*coefrnn;
+    if (rnp>=1.0)    
+        fcx = makebas4([rn0 gp zp rp],polyd)*coeffcn;
+        fpx = makebas4([rn0 gp zp rp],polyd)*coeffpn;
+    else
+        fcx = makebas4([rn0 gp zp rp],polyd)*coeffcb;
+        fpx = makebas4([rn0 gp zp rp],polyd)*coeffpb;
+    end
+    
     weight = wmat(ighe,1)*wmat(ighe,2)*wmat(ighe,3);
     fc0 = fc0 + weight*fcx;
     fp0 = fp0 + weight*fpx;
 
 end
 
-f(1,:) = -c0^(-tau) + rn0*fc0;
+if (ZLBflag==1)
+    f(1,:) = -c0^(-tau) + fc0;
+else
+    f(1,:) = -c0^(-tau) + rn0*fc0;
+end
 f(2,:) = ( (1-invnu)+invnu*c0^tau - phi*(pi0-pibar)*(pi0-.5*invnu*(pi0-pibar)) )*c0^(-tau)*y0 ...
     + fp0;

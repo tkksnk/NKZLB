@@ -31,7 +31,7 @@ crit = 1e-3;
 invnu = 6; % 1/nu = elasticity
 gyss = 0.2;
 gbar = 1.0/(1.0-gyss);
-% from Herbst and Schorfheide p. 98
+% from Herbst and Schorfheide (2015) p. 98
 rrbar = 0.42;
 % pibar = 1.0+3.30/400;
 % gamma = 1.0+0.52/100;
@@ -74,6 +74,7 @@ function nkpf2(pfmethod,nv,per,polyd,mu,crit,ngh,tol,damp,simT,...
 tic;
 
 %% setups
+maxiterout = 2;
 peaflag = 1; % =1; expectation term as a whole is approximated (only with pfmethod=0)
 
 % number of variables
@@ -90,7 +91,6 @@ fcss = beta*css^(-tau)/gamma/piss;
 fpss = beta*phi*css^(-tau)*yss*(piss-pibar)*piss;
 
 % Gaussian-Hermite quadrature
-% xz is abscissa and wz is weight for eps
 [xg,wg] = qnwnorm(ngh,0,sigmag);
 [xz,wz] = qnwnorm(ngh,0,sigmaz);
 [xr,wr] = qnwnorm(ngh,0,sigmar);
@@ -114,13 +114,14 @@ for ir = 1:ngh
 end
 
 % initial grid points: from log-linearized solution
+disp('Initialization');
 rng(1);
 shocks = randn(per,ne);
-disp('Simulating the ergodic distribution');
+disp(' Simulating the ergodic distribution');
 [sim_rn sim_g sim_z sim_r sim_c sim_pi sim_y] = ...
     calcsim_init(shocks,invnu,gbar,pibar,gamma,beta,tau,kappa,rhor,psi1,psi2,rhog,rhoz,sigmar,sigmag,sigmaz);
 
-disp('Generating the EDS grid');
+disp(' Generating the EDS grid');
 sim(1:per,1) = sim_rn;
 sim(1:per,2) = sim_g;
 sim(1:per,3) = sim_z;
@@ -152,7 +153,7 @@ dist = 1d+4;
 iterout = 0;
 
 %while (conv==0) 
-for iterout = 1:2
+for iterout = 1:maxiterout
     
 %    iterout = iterout + 1;
     % convergence criteria: See JMM
@@ -180,6 +181,7 @@ for iterout = 1:2
     fpvec1 = zeros(nv,1);
 
     %% inner loop
+    disp(' ');
     disp('Solving for the policy functions');
     diff = 1e+4;
     iter = 0;
@@ -200,6 +202,7 @@ for iterout = 1:2
             rnow = sf(i,4);
             ystar = (1-1/invnu)^(1/tau)*gbar*exp(gnow);
 
+            % time iteration
             if (pfmethod==0)
 
                 % solve nonlinear equations for c and pi
@@ -286,12 +289,12 @@ for iterout = 1:2
     end
 
     % generate new EDS grid
-    disp('Simulating the ergodic distribution');
+    disp(' Simulating the ergodic distribution');
     [sim_rn sim_g sim_z sim_r sim_c sim_pi sim_y] = ...
         calcsim(shocks,coefc,coefpi,coeffc,coeffp,pfmethod,peaflag,polyd,xmat,wmat,tol,...
         pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,rnss,sigmar,sigmag,sigmaz);
 
-    disp('Generating the EDS grid');
+    disp(' Generating the EDS grid');
     sim(1:per,1) = sim_rn;
     sim(1:per,2) = sim_g;
     sim(1:per,3) = sim_z;
