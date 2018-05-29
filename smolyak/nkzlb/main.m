@@ -4,7 +4,7 @@
 % March 27 2018 @ Pier's Cafe Todoroki, Setagaya
 % March 30 2018 @ Co-working space Pao Gotanda
 % April 3 2018  @ Doutor Coffee Oyamadai, Setagaya
-% May 29 2018 @ Mannheim
+% May 29 2018   @ Guesthouse Universitat Mannheim
 
 clear all;
 
