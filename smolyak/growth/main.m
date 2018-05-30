@@ -1,8 +1,7 @@
 % growthpf.m
 % Main file for computing the policy functions in the stochastic growth model
 % Written by Takeki Sunakawa
-% March 26 2018 @ Doutor Coffee Todoroki, Setagaya
-% May 28 2018 @ McDonald, Mannheim
+% Last updated: May 28 2018
 
 clear all;
 rng('default');

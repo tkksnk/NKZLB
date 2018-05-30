@@ -2,14 +2,12 @@
 % Main file for computing the policy functions in small NK model with ZLB
 % solved with simulation-based grid
 % Written by Takeki Sunakawa
-% May 4 2018 @ Guesthouse Universitat Mannheim
-% May 5 2018 @ Starbucks Coffee Mannheim
-% May 29 2018 @ McDonald Mannheim
+% Last updated: May 29 2018
 
 clear all;
 
 %% metaparameters
-pfmethod = 0;
+% pfmethod = 1; % =0: TI, =1: future PEA
 ngh = 3; % number of gh nodes
 tol = 1e-6; % tolerance for main loop
 damp = 0.7; % dampling parameter (for old policy functions)

@@ -1,9 +1,7 @@
 % nkpf.m
 % Main file for computing the policy functions in small NK model without ZLB
 % Written by Takeki Sunakawa
-% March 27 2018 @ Pier's Cafe Todoroki, Setagaya
-% March 30 2018 @ Co-working space Pao, Gotanda
-% May 28 2018 @ McDonald, Mannheim
+% Last updated: May 28 2018
 
 clear all;
 rng('default');
