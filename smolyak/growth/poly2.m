@@ -1,4 +1,5 @@
 function f = poly2(x,y,cflag)
+% calc the second order polynominal for two dimensional case
 
 fx = [x 2*x^2-1];
 fy = [y 2*y^2-1];

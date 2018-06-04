@@ -23,26 +23,28 @@ sigmaz = 0.008;
 
 tauvec = [1.0 2.0 5.0]';
 
-for i=1:size(tauvec,1)
-
-    tau = tauvec(i);
-    disp(' ');
-    disp(sprintf(' tau = %1.1f',tau));
-    disp(' order of polynomial, np=2');
-    simresult11 = growthpf(0,2,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
-    simresult12 = growthpf(1,2,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
-    simresult13 = growthpf(2,2,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
-
-    disp(' ');
-    disp(' order of polynomial, np=4');
-    simresult21 = growthpf(0,4,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
-    simresult22 = growthpf(1,4,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
-    simresult23 = growthpf(2,4,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
-
-    filename = ['simresult' num2str(i) '.csv'];
-    csvwrite(filename,[simresult11;simresult12;simresult13;simresult21;simresult22;simresult23]);
-
-end
+% for i=1:size(tauvec,1)
+% 
+%     tau = tauvec(i);
+%     disp(' ');
+%     disp(sprintf(' tau = %1.1f',tau));
+%     disp(' order of polynomial, np=2');
+    tau = 1.0;
+    %pfmethod = 0; % =0: TI, =1: future PEA, =2: current PEA 
+    simresult11 = growthpf(0,4,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz)
+%     simresult12 = growthpf(1,2,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
+%     simresult13 = growthpf(2,2,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
+% 
+%     disp(' ');
+%     disp(' order of polynomial, np=4');
+%     simresult21 = growthpf(0,4,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
+%     simresult22 = growthpf(1,4,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
+%     simresult23 = growthpf(2,4,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz);
+% 
+%     filename = ['simresult' num2str(i) '.csv'];
+%     csvwrite(filename,[simresult11;simresult12;simresult13;simresult21;simresult22;simresult23]);
+% 
+% end
 
 
 function simresult = growthpf(pfmethod,np,ngh,tol,simT,tau,beta,alpha,delta,rhoz,sigmaz)
@@ -152,19 +154,24 @@ fvec1 = zeros(nv,1);
 diff = 1e+4;
 iter = 0;
 
-while (diff>tol)
+% the loop continues until the norm between the old and new policy functions is sufficiently small
+while (diff>tol) 
     
     % fitting polynomials
+    % the basis function matrix (bbtinv is its inverse) is fixed with the collocation points
+    % and precomputed, but data points (cvec or fvec) will change over iterations.
     if (pfmethod==0)
         % time iteration
+        % the coefficients (theta) for the policy function of c
         coefc = bbtinv*cvec0;
     else
         % future or current PEA
         coeff = bbtinv*fvec0;
     end
 
-    for i=1:nv
+    for i=1:nv % index for the grid points
 
+        % at each grid point, we pick up (k_j,z_m)
         znow = zgrid(i);
         know = kgrid(i);
         
@@ -172,7 +179,10 @@ while (diff>tol)
         if (pfmethod==0)
 
             % solve nonlinear equation for c
+            % f(k,z)
             yterm = exp(znow)*know^alpha + (1-delta)*know;
+            % use Chris Sims' csolve for nonlinear optimization
+            % i.e., solve R(c)=0 for c given k_j, z_m, and theta
             c0 = csolve('foc',cvec0(i),[],tol^2,100,yterm,znow,coefc,slopecon,np,cflag,xz,wz,tau,beta,alpha,delta,rhoz);        
             kp = yterm - c0;
             % expectation term (not necessary)
@@ -195,7 +205,7 @@ while (diff>tol)
 
                 % next period's f (obtained by interpolation)
                 zp = rhoz*znow + xz(igh);
-                xzp = slopecon(2,1)*zp + slopecon(2,2); % z to x
+                xzp = slopecon(2,1)*zp + slopecon(2,2); % z to x in [-1,1]
                 if (np==2)
                     fp = poly2(xkp,xzp,cflag)*coeff;
                 elseif (np==4)
@@ -234,6 +244,7 @@ while (diff>tol)
                         
         end
         
+        % represent the new policy function at each grid point i
         cvec1(i) = c0;
         kvec1(i) = kp;
         fvec1(i) = f0;
@@ -252,8 +263,9 @@ while (diff>tol)
     
     % counter for iterations
     iter = iter + 1;
-    
-%    disp([iter diff]);
+
+    % show the convergence pattern
+    disp([iter diff]);
     
 end
 
