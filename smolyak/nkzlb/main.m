@@ -52,13 +52,13 @@ mz = 2.0;
 % disp(' order of polynomial, np=2 (Smolyak)');
 % nkpf2(0,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % nkpf2(1,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
-% nkpf2(2,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
+nkpf2(3,2,1,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % 
 % disp(' ');
 % disp(' order of polynomial, np=4 (Smolyak)');
 % nkpf2(0,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % nkpf2(1,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
-nkpf2(2,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
+% nkpf2(2,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 
 
 function nkpf2(pfmethod,np,cflag,ngh,tol,damp,simT,...
@@ -422,6 +422,33 @@ while ((diff>tol) && (iter<1000))
             fc0b = beta*c0b^(-tau)/(gamma*exp(znow))/pi0b;
             fp0b = beta*phi*c0b^(-tau)*y0b*(pi0b-pibar)*pi0b;
                         
+        elseif (pfmethod==3)
+            
+%             % precomputation of integrals
+%             xpevec = reshape(xpemat(:,i,:),[np ne]);
+
+            % in the non-ZLB regime
+            % successive approximation for rn and y
+            rn0n = rnvec0n(i);
+            y0n = yvec0n(i);                   
+            [c0n pi0n prn] = pf2gh(rn0n,y0n,gnow,znow,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,0,slopecon,np,cflag,xmat,wmat,pibar,invnu,tau,phi,rhog,rhoz);
+            y0n = c0n/(1/gbar/exp(gnow) - phi/2*(pi0n-pibar)^2);
+            rn0n = rnpast^rhor*( rnss*(pi0n/pibar)^psi1*(y0n/ystar)^psi2 )^(1-rhor)*exp(rnow);                            
+
+            % in the ZLB regime
+            % successive approximation for rn and y
+            rn0b = rnvec0b(i);
+            y0b = yvec0b(i);
+            [c0b pi0b prb] = pf2gh(rn0b,y0b,gnow,znow,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,1,slopecon,np,cflag,xmat,wmat,pibar,invnu,tau,phi,rhog,rhoz);            
+            y0b = c0b/(1/gbar/exp(gnow) - phi/2*(pi0b-pibar)^2);
+            rn0b = rnpast^rhor*( rnss*(pi0b/pibar)^psi1*(y0b/ystar)^psi2 )^(1-rhor)*exp(rnow);
+
+            % update the current fc and fp by using current c, pi and y
+            fc0n = beta*c0n^(-tau)/(gamma*exp(znow))/pi0n;
+            fp0n = beta*phi*c0n^(-tau)*y0n*(pi0n-pibar)*pi0n;
+            fc0b = beta*c0b^(-tau)/(gamma*exp(znow))/pi0b;
+            fp0b = beta*phi*c0b^(-tau)*y0b*(pi0b-pibar)*pi0b;
+                        
         end
         
         cvec1n(i)  = c0n;
@@ -482,6 +509,148 @@ end
 
 t = toc;
 % end of main loop
+
+% %% plot policy functions
+% coefcn  = bbtinv*cvec0n;
+% coefpin = bbtinv*pivec0n;
+% coefrnn = bbtinv*rnvec0n;
+% coefyn  = bbtinv*yvec0n;
+% coeffcn = bbtinv*fcvec0n;
+% coeffpn = bbtinv*fpvec0n;
+% coefcb  = bbtinv*cvec0b;
+% coefpib = bbtinv*pivec0b;
+% coefrnb = bbtinv*rnvec0b;
+% coefyb  = bbtinv*yvec0b;
+% coeffcb = bbtinv*fcvec0b;
+% coeffpb = bbtinv*fpvec0b;
+
+% nv1 = 101
+% rngrid1 = linspace(rnmin,rnmax,nv1)';
+% %ggrid1 = linspace(gmin,gmax,nv1);
+% 
+% for iv = 1:nv1
+%     
+%     rnpast = rngrid1(iv);
+%     gnow = 0; %ggrid1(iv);
+%     znow = 0;
+%     rnow = 0;
+%     ystar = (1-1/invnu)^(1/tau)*gbar*exp(gnow);
+%     
+%     % policy function
+%     xrn = slopecon(1,1)*rnpast + slopecon(1,2);
+%     xg = slopecon(2,1)*gnow + slopecon(2,2);
+%     xz = slopecon(3,1)*znow + slopecon(3,2);
+%     xr = slopecon(4,1)*rnow + slopecon(4,2);
+% 
+%     if (pfmethod==0)
+% 
+%         if (np==2)
+% 
+%             rn0 = poly2s([xrn xg xz xr]',cflag)*coefrnn;
+%             if (rn0>=1.0)
+%                 c0  = poly2s([xrn xg xz xr]',cflag)*coefcn;
+%                 pi0 = poly2s([xrn xg xz xr]',cflag)*coefpin;
+%             else
+%                 c0  = poly2s([xrn xg xz xr]',cflag)*coefcb;
+%                 pi0 = poly2s([xrn xg xz xr]',cflag)*coefpib;                
+%             end
+% 
+%         elseif (np==4)
+% 
+%             rn0 = poly4s([xrn xg xz xr]',cflag)*coefrnn;
+%             if (rn0>=1.0)
+%                 c0  = poly4s([xrn xg xz xr]',cflag)*coefcn;
+%                 pi0 = poly4s([xrn xg xz xr]',cflag)*coefpin;
+%             else
+%                 c0  = poly4s([xrn xg xz xr]',cflag)*coefcb;
+%                 pi0 = poly4s([xrn xg xz xr]',cflag)*coefpib;                
+%             end
+% 
+%         end
+%         
+%     elseif (pfmethod==1)
+% 
+%         if (np==2)
+%             
+%             rn0 = poly2s([xrn xg xz xr]',cflag)*coefrnn;
+%             if (rn0>=1.0)
+%                 fc0 = poly2s([xrn xg xz xr]',cflag)*coeffcn;
+%                 fp0 = poly2s([xrn xg xz xr]',cflag)*coeffpn;
+%             else
+%                 fc0 = poly2s([xrn xg xz xr]',cflag)*coeffcb;
+%                 fp0 = poly2s([xrn xg xz xr]',cflag)*coeffpb;                
+%             end
+%             
+%         elseif (np==4)
+% 
+%             rn0 = poly4s([xrn xg xz xr]',cflag)*coefrnn;
+%             if (rn0>=1.0)
+%                 fc0 = poly4s([xrn xg xz xr]',cflag)*coeffcn;
+%                 fp0 = poly4s([xrn xg xz xr]',cflag)*coeffpn;
+%             else
+%                 fc0 = poly4s([xrn xg xz xr]',cflag)*coeffcb;
+%                 fp0 = poly4s([xrn xg xz xr]',cflag)*coeffpb;                
+%             end
+%         
+%         end
+%         
+%         [c0 pi0] = pf1(fc0,fp0,pibar,invnu,tau,phi);
+%         
+%     elseif (pfmethod==2)
+%         
+%         if (np==2)            
+%             
+%             rn0 = poly2s([xrn xg xz xr]',cflag)*coefrnn;
+%             if (rn0>=1.0)
+%                 y0  = poly2s([xrn xg xz xr]',cflag)*coefyn;
+%             else
+%                 y0  = poly2s([xrn xg xz xr]',cflag)*coefyb;
+%             end
+%             
+%         elseif (np==4)
+% 
+%             rn0 = poly4s([xrn xg xz xr]',cflag)*coefrnn;
+%             if (rn0>=1.0)
+%                 y0  = poly4s([xrn xg xz xr]',cflag)*coefyn;
+%             else
+%                 y0  = poly4s([xrn xg xz xr]',cflag)*coefyb;
+%             end
+%         
+%         end
+%         
+%         % precomputation of integrals
+%         xgpe = prenormchev(slopecon(2,:),np,gnow,rhog,sigmag);
+%         xzpe = prenormchev(slopecon(3,:),np,znow,rhoz,sigmaz);
+%         xrpe = prenormchev(slopecon(4,:),np,rnow,0,sigmar);
+%         xpevec = [xgpe xzpe xrpe];
+%         [c0 pi0] = pf2(rn0,y0,xpevec,gnow,znow,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,0,slopecon,np,cflag,pibar,invnu,tau,phi,rhog,rhoz,sigmag,sigmaz,sigmar);
+% 
+%     end
+% 
+%     y0 = c0/(1/gbar/exp(gnow) - phi/2*(pi0-pibar)^2);
+%     rn0 = rnpast^rhor*( rnss*(pi0/pibar)^psi1*(y0/ystar)^psi2 )^(1-rhor)*exp(rnow);
+%     
+%     cvec0(iv) = c0;
+%     pivec0(iv) = pi0;
+%     yvec0(iv) = y0;
+%     rnvec0(iv) = rn0;
+% 
+% end
+% 
+% figure;
+% subplot(313);
+% plot(rngrid1,cvec0,'LineWidth',2.0);
+% xlim([rngrid1(1) rngrid1(end)]);
+% subplot(312);
+% plot(rngrid1,pivec0,'LineWidth',2.0);
+% xlim([rngrid1(1) rngrid1(end)]);
+% % subplot(223);
+% % plot(rngrid1,yvec0,'LineWidth',2.0);
+% % xlim([rngrid1(1) rngrid1(end)]);
+% subplot(311);
+% plot(rngrid1,max(rnvec0,1.0),'LineWidth',2.0);
+% xlim([rngrid1(1) rngrid1(end)]);
+% pause;
 
 %% Euler errors
 drop = floor(0.05*simT);
@@ -604,6 +773,30 @@ for time = 1:simTT
         xpevec = [xgpe xzpe xrpe];
         [c0 pi0] = pf2(rn0,y0,xpevec,gnow,znow,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,0,slopecon,np,cflag,pibar,invnu,tau,phi,rhog,rhoz,sigmag,sigmaz,sigmar);
 
+    elseif (pfmethod==3)
+        
+        if (np==2)            
+            
+            rn0 = poly2s([xrn xg xz xr]',cflag)*coefrnn;
+            if (rn0>=1.0)
+                y0  = poly2s([xrn xg xz xr]',cflag)*coefyn;
+            else
+                y0  = poly2s([xrn xg xz xr]',cflag)*coefyb;
+            end
+            
+        elseif (np==4)
+
+            rn0 = poly4s([xrn xg xz xr]',cflag)*coefrnn;
+            if (rn0>=1.0)
+                y0  = poly4s([xrn xg xz xr]',cflag)*coefyn;
+            else
+                y0  = poly4s([xrn xg xz xr]',cflag)*coefyb;
+            end
+        
+        end
+        
+        [c0 pi0] = pf2gh(rn0,y0,gnow,znow,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,0,slopecon,np,cflag,xmat,wmat,pibar,invnu,tau,phi,rhog,rhoz);
+
     end
 
     y0 = c0/(1/gbar/exp(gnow) - phi/2*(pi0-pibar)^2);
@@ -697,13 +890,42 @@ for time = 1:simTT
                 end
                 
             end
-            
+                
             % precomputation of integrals
             xgpe = prenormchev(slopecon(2,:),np,gp,rhog,sigmag);
             xzpe = prenormchev(slopecon(3,:),np,zp,rhoz,sigmaz);
             xrpe = prenormchev(slopecon(4,:),np,rp,0,sigmar);
             xpevec = [xgpe xzpe xrpe];
             [cp pip] = pf2(rnp,yp,xpevec,gp,zp,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,0,slopecon,np,cflag,pibar,invnu,tau,phi,rhog,rhoz,sigmag,sigmaz,sigmar);
+                
+        elseif (pfmethod==3)
+
+            if (np==2)
+                
+                rnp = poly2s([xrnp xgp xzp xrp]',cflag)*coefrnn;
+                if (rnp>=1.0)
+                    yp  = poly2s([xrnp xgp xzp xrp]',cflag)*coefyn;
+                else
+                    yp  = poly2s([xrnp xgp xzp xrp]',cflag)*coefyb;                    
+                end
+                
+            elseif (np==4)
+                
+                rnp = poly4s([xrnp xgp xzp xrp]',cflag)*coefrnn;
+                if (rnp>=1.0)
+                    yp  = poly4s([xrnp xgp xzp xrp]',cflag)*coefyn;
+                else
+                    yp  = poly4s([xrnp xgp xzp xrp]',cflag)*coefyb;                    
+                end
+                
+            end
+            
+%             % precomputation of integrals
+%             xgpe = prenormchev(slopecon(2,:),np,gp,rhog,sigmag);
+%             xzpe = prenormchev(slopecon(3,:),np,zp,rhoz,sigmaz);
+%             xrpe = prenormchev(slopecon(4,:),np,rp,0,sigmar);
+%             xpevec = [xgpe xzpe xrpe];
+            [cp pip] = pf2gh(rnp,yp,gp,zp,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,0,slopecon,np,cflag,xmat,wmat,pibar,invnu,tau,phi,rhog,rhoz);
             
         end
         
@@ -728,7 +950,7 @@ for time = 1:simTT
     zvec(time+1)  = rhoz*znow + sigmaz*randn;
     rvec(time+1)  = sigmar*randn;
     
-%    disp([c0 pi0 time]);
+    if(mod(time,100)==0); disp([c0 pi0 time]); end;
     
 end
 
@@ -837,7 +1059,7 @@ pi0 = (a1-sqrt(a1^2-4*a0*a2))/2/a2;
 end
 
 
-function [c0 pi0 pr] = pf2gh(rn0,y0,gnow,znow,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,ZLBflag,slopecon,np,cflag,xmat,wmat,pibar,invnu,tau,phi,rhog,rhoz,sigmag,sigmaz,sigmar)
+function [c0 pi0 pr] = pf2gh(rn0,y0,gnow,znow,coeffcn,coeffpn,coeffcb,coeffpb,coefrnn,ZLBflag,slopecon,np,cflag,xmat,wmat,pibar,invnu,tau,phi,rhog,rhoz)
 % current PEA, use GH quadrature instead
 
 nghe = size(xmat,1);

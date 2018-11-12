@@ -51,22 +51,15 @@ disp(' order of polynomial, np=2');
 % 
 % disp(' ');
 % disp(' order of polynomial, np=2 (Smolyak)');
- nkpf2(0,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
+% nkpf2(0,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % nkpf2(1,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
-% nkpf2(2,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
+ nkpf2(3,2,1,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 
 % disp(' ');
 % disp(' order of polynomial, np=4 (Smolyak)');
 % nkpf2(0,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % nkpf2(1,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % nkpf2(2,4,2,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
-% 
-% disp(' ');
-% disp(' order of polynomial, np=4');
-% nkpf(0,4,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,sigmag);
-% nkpf(1,4,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,sigmag);
-% nkpf2(2,4,1,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
-
 
 function nkpf2(pfmethod,np,cflag,ngh,tol,damp,simT,...
     pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz)
@@ -295,6 +288,19 @@ while ((diff>tol) && (iter<1000))
             fc0 = beta*c0^(-tau)/(gamma*exp(znow))/pi0;
             fp0 = beta*phi*c0^(-tau)*y0*(pi0-pibar)*pi0;
                         
+        elseif (pfmethod==3)
+            
+            % successive approximation for rn and y
+            rn0 = rnvec0(i);
+            y0 = yvec0(i);
+            [c0 pi0] = pf2gh(rn0,y0,gnow,znow,xmat,wmat,coeffc,coeffp,slopecon,np,cflag,pibar,invnu,tau,phi,rhog,rhoz);
+            y0 = c0/(1/gbar/exp(gnow) - phi/2*(pi0-pibar)^2);
+            rn0 = rnpast^rhor*( rnss*(pi0/pibar)^psi1*(y0/ystar)^psi2 )^(1-rhor)*exp(rnow);
+
+            % update the current fc and fp by using current c, pi and y
+            fc0 = beta*c0^(-tau)/(gamma*exp(znow))/pi0;
+            fp0 = beta*phi*c0^(-tau)*y0*(pi0-pibar)*pi0;
+                        
         end
         
         cvec1(i)  = c0;
@@ -404,6 +410,18 @@ for time = 1:simTT-1
         xrpe = prenormchev(slopecon(4,:),np,rnow,0,sigmar);
         xpevec = [xgpe xzpe xrpe];
         [c0 pi0] = pf2(rn0,y0,xpevec,coeffc,coeffp,slopecon,np,cflag,pibar,invnu,tau,phi);
+
+    elseif (pfmethod==3)
+        
+        if (np==2)
+            y0  = poly2s([xrn xg xz xr]',cflag)*coefy;
+            rn0 = poly2s([xrn xg xz xr]',cflag)*coefrn;
+        elseif (np==4)
+            y0  = poly4s([xrn xg xz xr]',cflag)*coefy;
+            rn0 = poly4s([xrn xg xz xr]',cflag)*coefrn;
+        end
+        
+        [c0 pi0] = pf2gh(rn0,y0,gnow,znow,xmat,wmat,coeffc,coeffp,slopecon,np,cflag,pibar,invnu,tau,phi,rhog,rhoz);
         
     end
 
@@ -462,6 +480,18 @@ for time = 1:simTT-1
             xrpe = prenormchev(slopecon(4,:),np,rp,0,sigmar);
             xpevec = [xgpe xzpe xrpe];
             [cp pip] = pf2(rnp,yp,xpevec,coeffc,coeffp,slopecon,np,cflag,pibar,invnu,tau,phi);            
+
+        elseif (pfmethod==3)
+
+            if (np==2)
+                yp  = poly2s([xrnp xgp xzp xrp]',cflag)*coefy;
+                rnp = poly2s([xrnp xgp xzp xrp]',cflag)*coefrn;
+            elseif (np==4)
+                yp  = poly4s([xrnp xgp xzp xrp]',cflag)*coefy;
+                rnp = poly4s([xrnp xgp xzp xrp]',cflag)*coefrn;
+            end
+            
+            [cp pip] = pf2gh(rnp,yp,gp,zp,xmat,wmat,coeffc,coeffp,slopecon,np,cflag,pibar,invnu,tau,phi,rhog,rhoz);            
             
         end
         
@@ -486,7 +516,7 @@ for time = 1:simTT-1
     zvec(time+1)  = rhoz*znow + sigmaz*randn;
     rvec(time+1)  = sigmar*randn;
     
-%    disp([c0 pi0 time]);
+    if(mod(time,100)==0); disp([c0 pi0 time]); end;
     
 end
 
@@ -538,18 +568,56 @@ end
 
 function [c0 pi0] = pf2(rn0,y0,xpevec,coeffc,coeffp,slopecon,np,cflag,pibar,invnu,tau,phi)
 
-xrn = slopecon(1,1)*rn0 + slopecon(1,2);
+xrnp = slopecon(1,1)*rn0 + slopecon(1,2);
 % precomputation of integrals
 % xzpe have integral of basis functions T_j(xp) for j = 1,2,... where xp = d0 + d1*zp at each
 % grid point i=1,...,nv
 
 % calculate the current f with interpolation
 if (np==2)
-    fc0 = poly2sprecomp(xrn,xpevec,cflag)*coeffc;
-    fp0 = poly2sprecomp(xrn,xpevec,cflag)*coeffp;
+    fc0 = poly2sprecomp(xrnp,xpevec,cflag)*coeffc;
+    fp0 = poly2sprecomp(xrnp,xpevec,cflag)*coeffp;
 elseif (np==4)
-    fc0 = poly4sprecomp(xrn,xpevec,cflag)*coeffc;
-    fp0 = poly4sprecomp(xrn,xpevec,cflag)*coeffp;
+    fc0 = poly4sprecomp(xrnp,xpevec,cflag)*coeffc;
+    fp0 = poly4sprecomp(xrnp,xpevec,cflag)*coeffp;
+end
+
+c0 = (rn0*fc0)^(-1/tau);
+% solve quadratic equation for pi
+a0 = .5*phi*pibar^2*invnu + (1-invnu) + invnu*c0^tau + fp0*c0^tau/y0; % BUG 180331
+a1 = -phi*pibar*(1-invnu);
+a2 = -phi*(1-.5*invnu);
+pi0 = (a1-sqrt(a1^2-4*a0*a2))/2/a2;
+
+end
+
+
+function [c0 pi0] = pf2gh(rn0,y0,gnow,znow,xmat,wmat,coeffc,coeffp,slopecon,np,cflag,pibar,invnu,tau,phi,rhog,rhoz)
+
+xrnp = slopecon(1,1)*rn0 + slopecon(1,2);
+fc0 = 0.0;
+fp0 = 0.0;
+for ighe=1:size(xmat,1)
+
+    % next period's fc and fp (obtained by interpolation)
+    gp = rhog*gnow + xmat(ighe,1);
+    zp = rhoz*znow + xmat(ighe,2);
+    rp = xmat(ighe,3);
+    xg = slopecon(2,1)*gp + slopecon(2,2);
+    xzp = slopecon(3,1)*zp + slopecon(3,2);
+    xrp = slopecon(4,1)*rp + slopecon(4,2);
+    if (np==2)
+        fcx = poly2s([xrnp xg xzp xrp]',cflag)*coeffc;
+        fpx = poly2s([xrnp xg xzp xrp]',cflag)*coeffp;
+    elseif (np==4)
+        fcx = poly4s([xrnp zp xzp xrp]',cflag)*coeffc;
+        fpx = poly4s([xrnp zp xzp xrp]',cflag)*coeffp;
+    end
+
+    weight = wmat(ighe,1)*wmat(ighe,2)*wmat(ighe,3);
+    fc0 = fc0 + weight*fcx;
+    fp0 = fp0 + weight*fpx;
+    
 end
 
 c0 = (rn0*fc0)^(-1/tau);
