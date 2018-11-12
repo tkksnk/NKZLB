@@ -53,8 +53,8 @@ sigmaz = 0.31/100;
 
 disp(' ');
 disp(' number of grid points nv=25 and order of polynomial np=2');
-% nkpf2(0,25,10000,polyd,mu,crit,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,kappa,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz);
-nkpf2(1,25,10000,polyd,mu,crit,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,kappa,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz);
+nkpf2(0,25,10000,polyd,mu,crit,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,kappa,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz);
+% nkpf2(1,25,10000,polyd,mu,crit,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,kappa,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz);
 % 
 % disp(' ');
 % disp(' number of grid points nv=50 and order of polynomial np=2');

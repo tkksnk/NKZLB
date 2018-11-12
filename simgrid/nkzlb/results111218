@@ -1,0 +1,65 @@
+future PEA, M = 25
+
+Columns 1 through 2
+
+    0.7692    2.1758
+
+  Columns 3 through 4
+
+    2.6764    1.3143
+
+  Columns 1 through 2
+
+   -3.0187   -2.5013
+
+  Columns 3 through 4
+
+   -1.9447   -1.3825
+
+  Columns 5 through 6
+
+    2.7421  142.0000
+    
+future PEA, M = 50
+
+  Columns 1 through 2
+
+    0.7681    2.1537
+
+  Columns 3 through 4
+
+    2.6299    1.4571
+
+  Columns 1 through 2
+
+   -3.1878   -2.5834
+
+  Columns 3 through 4
+
+   -1.9994   -1.3362
+
+  Columns 5 through 6
+
+    3.8231  155.0000
+
+future PEA, M = 100
+
+  Columns 1 through 2
+
+    0.7644    2.1052
+
+  Columns 3 through 4
+
+    2.5803    1.3143
+
+  Columns 1 through 2
+
+   -3.2551   -2.6764
+
+  Columns 3 through 4
+
+   -2.0624   -1.4417
+
+  Columns 5 through 6
+
+    5.7269  144.0000

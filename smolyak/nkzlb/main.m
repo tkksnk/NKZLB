@@ -21,8 +21,13 @@ invnu = 6; % 1/nu = elasticity
 gyss = 0.2;
 gbar = 1.0/(1.0-gyss);
 % from Herbst and Schorfheide (2015) p. 98
-rrbar = 0.42;
-pibar = 1.0+3.30/400;
+% rrbar = 0.42;
+% pibar = 1.0+3.30/400;
+% gamma = 1.0+0.52/100;
+% beta  = 1.0/(1.0+rrbar/400);
+beta = 0.998951101343589;
+rrbar = 0.75; %0.42;
+pibar = 1.0+0.5/100; %1.0+3.30/400;
 gamma = 1.0+0.52/100;
 beta  = 1.0/(1.0+rrbar/400);
 
@@ -52,7 +57,7 @@ mz = 2.0;
 % disp(' order of polynomial, np=2 (Smolyak)');
 % nkpf2(0,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % nkpf2(1,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
-nkpf2(3,2,1,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
+nkpf2(2,2,0,ngh,tol,damp,simT,pibar,gamma,beta,invnu,gbar,tau,phi,psi1,psi2,rhor,rhog,rhoz,sigmar,sigmag,sigmaz,rnpct,mr,mg,mz);
 % 
 % disp(' ');
 % disp(' order of polynomial, np=4 (Smolyak)');
