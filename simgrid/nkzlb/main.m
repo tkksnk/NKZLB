@@ -463,6 +463,7 @@ for iterout = 1:maxiterout
 end
 
 t = toc;
+% end of main loop
 
 %% Euler errors
 drop = floor(0.05*simT);
